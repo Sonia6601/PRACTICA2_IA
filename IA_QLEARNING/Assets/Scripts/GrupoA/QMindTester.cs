@@ -33,6 +33,7 @@ namespace GrupoA
 
         private string BuildStateKey(CellInfo agent, CellInfo other)
         {
+            // Mira si hay un muro en todas las direcciones
             bool wallUp = IsWall(agent.x, agent.y + 1);
             bool wallDown = IsWall(agent.x, agent.y - 1);
             bool wallLeft = IsWall(agent.x - 1, agent.y);
@@ -44,11 +45,12 @@ namespace GrupoA
             int freeLeft = CountFree(agent.x, agent.y, -1, 0, 3);
             int freeRight = CountFree(agent.x, agent.y, 1, 0, 3);
 
-            // La direcci n con m s espacio libre
+            // La dirección con m s espacio libre
             int escapeDirX = 0, escapeDirY = 0;
             int maxFree = Math.Max(Math.Max(freeUp, freeDown),
                                    Math.Max(freeLeft, freeRight));
 
+            //una vez calculada la dirección con más espacio, va en esa dirección
             if (maxFree == freeUp) escapeDirY = 1;
             else if (maxFree == freeDown) escapeDirY = -1;
             else if (maxFree == freeRight) escapeDirX = 1;
@@ -60,8 +62,9 @@ namespace GrupoA
             return state.ToKey();
         }
 
-        private int CountFree(int x, int y, int dx, int dy, int steps)
+        private int CountFree(int x, int y, int dx, int dy, int steps)//Cuenta los espacios libres
         {
+            {
             int count = 0;
             for (int i = 1; i <= steps; i++)
             {
@@ -73,7 +76,7 @@ namespace GrupoA
             return count;
         }
 
-        private CellInfo ApplyAction(CellInfo agentCell, QAction action)
+        private CellInfo ApplyAction(CellInfo agentCell, QAction action) //aplica la acción de la tabla Q
         {
             switch (action)
             {
@@ -90,7 +93,7 @@ namespace GrupoA
             }
         }
 
-        private bool IsWall(int x, int y)
+        private bool IsWall(int x, int y) //mira si hay un muro
         {
             if (x < 0 || x >= _worldInfo.WorldSize.x || y < 0 || y >= _worldInfo.WorldSize.y) return true;
             return !_worldInfo[x, y].Walkable;

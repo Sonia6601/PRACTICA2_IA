@@ -34,7 +34,8 @@ namespace GrupoA
         ///  3. Devuelve el valor almacenado en:
         ///        _storage.Data[stateKey][index]
         /// </summary>
-        public float GetQ(string stateKey, QAction action)
+        
+        public float GetQ(string stateKey, QAction action) //Consigue los datos
         {
             EnsureState(stateKey);
             int index = (int)action;
@@ -53,7 +54,8 @@ namespace GrupoA
         ///  3. Guarda el valor recibido en:
         ///        _storage.Data[stateKey][index] = value;
         /// </summary>
-        public void SetQ(string stateKey, QAction action, float value)
+        
+        public void SetQ(string stateKey, QAction action, float value) //guarda los datos
         {
             EnsureState(stateKey);
             int index = (int)action;
@@ -74,6 +76,7 @@ namespace GrupoA
         ///        var qValues = _storage.Data[stateKey];
         ///  3. Recorre el array buscando el valor máximo y devuélvelo.
         /// </summary>
+        
         public float GetMaxQ(string stateKey)
         {
             EnsureState(stateKey);
@@ -108,7 +111,7 @@ namespace GrupoA
         /// </summary>
         /// 
 
-        public QAction GetBestAction(string stateKey)
+        public QAction GetBestAction(string stateKey) //coge la mejor acción
         {
             EnsureState(stateKey);
             var qValues = _storage.Data[stateKey];
@@ -128,33 +131,6 @@ namespace GrupoA
             return (QAction)bestIndex;
         }
 
-        //public QAction GetBestAction(string stateKey)
-        //{
-        //    // Implementa aquí la selección de la mejor acción según la Tabla Q
-
-        //    EnsureState(stateKey); //Se asegura que el estado existe, para ello se llama a EnsureState
-        //    var qValues = _storage.Data[stateKey]; //Obtener el array de Q-values
-        //    float max = float.MinValue;
-
-        //    List<int> bestIndex = new List<int>(); //En la lista se meteran los indices más altos
-
-        //    for (int i = 0; i < qValues.Length; i++)
-        //    {
-        //        if (qValues[i] > max) //Si el valor es mayor que el máximo
-        //        {
-        //            max = qValues[i]; //Se declara el nuevo maximo
-        //            bestIndex.Clear(); //Se limpia la lista 
-        //            bestIndex.Add(i); //Se introduce el nuevo máximo
-
-        //        }
-        //        else if (qValues[i] == max) //Si son iguales
-        //        {
-        //            bestIndex.Add(i); //Solo se añade a la lista
-        //        }
-        //    }
-        //    return (QAction)bestIndex[UnityEngine.Random.Range(0, bestIndex.Count)];//Si hay varios indices iguales, se devuelve uno aleatorio. Por el contrario, si solo hay uno, pues se devolverá ese
-
-
         public QAction GetRandomAction(string stateKey)
         {
             EnsureState(stateKey); //Se asegura que el estado existe, para ello se llama a EnsureState
@@ -167,9 +143,7 @@ namespace GrupoA
         }
 
 
-
-
-        public void SaveToCsv()
+        public void SaveToCsv() 
         {
             _storage.Save();
         }

@@ -37,19 +37,20 @@ namespace GrupoA
         public bool WallLeft { get; }
         public bool WallRight { get; }
 
-        // NUEVO: dirección con más espacio libre
-        public int EscapeDirX { get; }  // -1, 0, 1
-        public int EscapeDirY { get; }  // -1, 0, 1
+        // Dirección con más espacio libre
+        public int EscapeDirX { get; }
+        public int EscapeDirY { get; }
 
         public QState(CellInfo agent, CellInfo other,
             bool wallUp, bool wallDown, bool wallLeft, bool wallRight,
-            int escapeDirX, int escapeDirY)  // nuevos parámetros
+            int escapeDirX, int escapeDirY)  // parámetros de la función
         {
-            DirX = Math.Sign(other.x - agent.x);
+            //calculo de distancia
+            DirX = Math.Sign(other.x - agent.x); 
             DirY = Math.Sign(other.y - agent.y);
 
-            int dist = Math.Abs(other.x - agent.x) + Math.Abs(other.y - agent.y);
-            DistanceValues = dist <= 3 ? 0 : dist <= 7 ? 1 : 2;
+            int dist = Math.Abs(other.x - agent.x) + Math.Abs(other.y - agent.y); //calculo de la distancia
+            DistanceValues = dist <= 3 ? 0 : dist <= 7 ? 1 : 2; //si es <=3, es 0, si es <= 7, entonces 1, y si no 2
 
             WallUp = wallUp;
             WallDown = wallDown;
@@ -60,7 +61,7 @@ namespace GrupoA
             EscapeDirY = escapeDirY;
         }
 
-        public string ToKey()
+        public string ToKey() //Transcripcion de los datos del estado para la tabla Q
         {
             return $"{DirX}|{DirY}|{DistanceValues}|" +
                    $"{(WallUp ? 1 : 0)}{(WallDown ? 1 : 0)}{(WallLeft ? 1 : 0)}{(WallRight ? 1 : 0)}|" +

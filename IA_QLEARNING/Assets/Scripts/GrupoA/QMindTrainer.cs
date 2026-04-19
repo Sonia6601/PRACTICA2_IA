@@ -24,12 +24,8 @@ namespace GrupoA
         private float _returnAveraged;
         private System.Random _random = new System.Random();
 
-        // A partir de aqui has el // son variables que no tiene el otro codigo
+        //
         private float currentEpsilon;
-        private float initialEpsilon = 0.9f;
-        private float minEpsilon = 0.1f;
-        private float epsilonDecay = 0.9995f; // Decae lentamente
-        private float _lastLoggedEpsilon = -1f;
 
 
         private int _bestEpisode = 0;
@@ -57,7 +53,7 @@ namespace GrupoA
         #endregion
 
         public void Initialize(QMindTrainerParams qMindTrainerParams, WorldInfo worldInfo, INavigationAlgorithm navigationAlgorithm)
-        {
+        { //constructor
             _params = qMindTrainerParams;
             _worldInfo = worldInfo;
             _navigationAlgorithm = navigationAlgorithm;
@@ -73,26 +69,24 @@ namespace GrupoA
 
         private void StartNewEpisode()
         {
-
+            //Inicialización del episodio
             CurrentEpisode++;
             CurrentStep = 0;
             _return = 0f;
             _returnAveraged = 0f;
 
+            //cada episodio aparecen en una posición distinta
             _agentPosition = _worldInfo.RandomCell();
             _otherPosition = _worldInfo.RandomCell();
-
-            //if (ManhattanDistance(_agentPosition, _otherPosition) < 8)
-            //    _otherPosition = _worldInfo.RandomCell();
 
             OnEpisodeStarted?.Invoke(this, EventArgs.Empty);
         }
 
         private void EndEpisode()
         {
-            //DecayEpsilon();
 
             #region Debuging
+            //Cuando se entrena, te muestra estos datos para saber cómo va evolucionando el entrenamiento
             // Acumulamos pasos para la media
             _totalSteps += CurrentStep;
             _finishedEpisodes++;
@@ -105,13 +99,13 @@ namespace GrupoA
             }
             #endregion
 
-            _qTable.SaveToCsv();
+            _qTable.SaveToCsv(); //salva la tabla
 
-            Debug.Log($"[END EPISODE] {CurrentEpisode} | Steps: {CurrentStep} | Epsilon: {currentEpsilon:F4}");
+            Debug.Log($"[END EPISODE] {CurrentEpisode} | Steps: {CurrentStep} | Epsilon: {currentEpsilon:F4}"); //resumen del episodio
 
             OnEpisodeFinished?.Invoke(this, EventArgs.Empty);
 
-            if (_params.episodes > 0 && CurrentEpisode >= _params.episodes)
+            if (_params.episodes > 0 && CurrentEpisode >= _params.episodes) //resumen del entrenamiento
             {
                 float averageSteps = (float)_totalSteps / _finishedEpisodes;
 
@@ -124,7 +118,7 @@ namespace GrupoA
                 return;
             }
 
-            StartNewEpisode();
+            StartNewEpisode(); //una vez acaba un episodio, empieza uno nuevo
         }
 
         public void DoStep(bool train)
@@ -145,7 +139,7 @@ namespace GrupoA
             // Calcula la recompensa
             float reward = ComputeReward(_agentPosition, _otherPosition, newAgentPos, newOtherPos, action);
 
-            if (train)
+            if (train) //si entrena se actualiza la tabla Q
             {
                 UpdateQ(stateKey, action, reward, nextStateKey);
             }
@@ -169,23 +163,9 @@ namespace GrupoA
 
         #region Parte a implementar por el alumno
 
-        //private void DecayEpsilon()
-        //{
-        //    float oldEpsilon = currentEpsilon;
-        //    // Reducimos epsilon multiplicándolo por el factor de decaimiento,
-        //    // pero nunca bajamos del mínimo establecido.
-        //    currentEpsilon = Mathf.Max(minEpsilon, currentEpsilon * epsilonDecay);
-
-        //    // Log opcional para no saturar la consola
-        //    if (Mathf.Abs(currentEpsilon - _lastLoggedEpsilon) > 0.05f)
-        //    {
-        //        // Debug.Log($"[EPSILON] {currentEpsilon:F4}");
-        //        _lastLoggedEpsilon = currentEpsilon;
-        //    }
-        //}
-
         private string BuildStateKey(CellInfo agent, CellInfo other)
         {
+            // Mira si hay un muro en todas las direcciones
             bool wallUp = IsWall(agent.x, agent.y + 1);
             bool wallDown = IsWall(agent.x, agent.y - 1);
             bool wallLeft = IsWall(agent.x - 1, agent.y);
@@ -202,6 +182,7 @@ namespace GrupoA
             int maxFree = Math.Max(Math.Max(freeUp, freeDown),
                                    Math.Max(freeLeft, freeRight));
 
+            //una vez calculada la dirección con más espacio, va en esa dirección
             if (maxFree == freeUp) escapeDirY = 1;
             else if (maxFree == freeDown) escapeDirY = -1;
             else if (maxFree == freeRight) escapeDirX = 1;
@@ -213,7 +194,7 @@ namespace GrupoA
             return state.ToKey();
         }
 
-        private int CountFree(int x, int y, int dx, int dy, int steps)
+        private int CountFree(int x, int y, int dx, int dy, int steps) //Cuenta los espacios libres
         {
             int count = 0;
             for (int i = 1; i <= steps; i++)
@@ -226,7 +207,7 @@ namespace GrupoA
             return count;
         }
 
-        private bool IsWall(int x, int y)
+        private bool IsWall(int x, int y) //mira si hay un muro
         {
             if (x < 0 || x >= _worldInfo.WorldSize.x || y < 0 || y >= _worldInfo.WorldSize.y) return true;
             return !_worldInfo[x, y].Walkable;
@@ -246,7 +227,7 @@ namespace GrupoA
             return _qTable.GetBestAction(stateKey);
         }
 
-        private void UpdateQ(string stateKey, QAction action, float reward, string nextStateKey)
+        private void UpdateQ(string stateKey, QAction action, float reward, string nextStateKey) //Actualiza la tablaQ
         {
             float oldQ = _qTable.GetQ(stateKey, action);
             float maxQNext = _qTable.GetMaxQ(nextStateKey);
@@ -262,9 +243,10 @@ namespace GrupoA
         #endregion
 
         private float ComputeReward(CellInfo oldAgentPos, CellInfo oldEnemyPos,
-                             CellInfo newAgentPos, CellInfo newEnemyPos, QAction action)
+                             CellInfo newAgentPos, CellInfo newEnemyPos, QAction action) //esta función da los premios de las acciones
         {
-            if (newAgentPos == newEnemyPos || newAgentPos == null || !newAgentPos.Walkable)
+            //si el enemigo le pilla, no hay agente o si no se puede caminar en la posición (fuera de los limites del mapa)
+            if (newAgentPos == newEnemyPos || newAgentPos == null || !newAgentPos.Walkable) 
                 return -5000f;
 
             // Penalización por no moverse (choque con muro)
@@ -277,14 +259,17 @@ namespace GrupoA
             // Recompensa base por sobrevivir un paso
             float reward = 10f;
 
-            if (newDist > oldDist)
+            if (newDist > oldDist) //si la nueva distancia es mejor que la anterior
             {
-                if (newDist <= 3) reward += 100f;
+                //dependiendo de la distancia se le da un premio o otro
+                if (newDist <= 3) reward += 100f; 
                 else if (newDist <= 7) reward += 40f;
                 else reward += 15f;
             }
-            else if (newDist < oldDist)
+
+            else if (newDist < oldDist) //si la nueva distancia es peor 
             {
+                //se le penaliza más o menos
                 if (newDist <= 3) reward -= 200f;
                 else if (newDist <= 7) reward -= 80f;
                 else reward -= 20f;
@@ -307,14 +292,14 @@ namespace GrupoA
         private bool IsTerminalState(CellInfo agent, CellInfo other)
         {
             // El episodio termina si el agente es atrapado
-            // Ojo: El límite de pasos (_params.maxSteps) ya lo gestiona DoStep fuera de esta región,
+            // Ojo: El límite de pasos (_params.maxSteps) ya lo gestiona DoStep,
             // pero aquí debemos confirmar la condición de captura.
             if (agent == other)
             {
                 Console.WriteLine("Se ha atrapado al agente");
                 return true;
             }
-            // También comprobamos los pasos por si acaso la lógica externa depende de este bool
+            // También comprobamos los pasos por si acaso
             if (CurrentStep >= _params.maxSteps)
             {
                 return true;
@@ -323,7 +308,7 @@ namespace GrupoA
             return false;
         }
 
-        private CellInfo ApplyAction(CellInfo agentCell, QAction action)
+        private CellInfo ApplyAction(CellInfo agentCell, QAction action) //aplica la accion que el agente quiere realizar
         {
             int nx = agentCell.x;
             int ny = agentCell.y;
@@ -339,7 +324,7 @@ namespace GrupoA
 
             CellInfo next = _worldInfo[nx, ny];
 
-            // Si hay muro, se queda quieto y recibe la penalización de ComputeReward
+            // Si hay muro, se queda quieto y recibe la penalización de ComputeReward (sabe que por ahi no debe ir)
             if (!next.Walkable)
                 return agentCell;
 
